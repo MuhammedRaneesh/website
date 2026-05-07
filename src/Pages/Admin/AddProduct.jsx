@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../../api/axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -14,7 +14,7 @@ function AddProduct() {
     price: "",
     sizes: [],
     description: "",
-    image: ""
+    image: null,
   });
 
   const Sizes = [6, 7, 8, 9, 10, 11, 12];
@@ -22,7 +22,14 @@ function AddProduct() {
   const handilChange = (e) => {
     setProduct({
       ...product,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleImageChange = (e) => {
+    setProduct({
+      ...product,
+      image: e.target.files[0] || null,
     });
   };
 
@@ -37,25 +44,44 @@ function AddProduct() {
 
     setProduct({
       ...product,
-      sizes: newSizes
+      sizes: newSizes,
     });
   };
-
 
   const handilSubmit = async (e) => {
     e.preventDefault();
 
-    if (!product.name || !product.price || !product.image) {
+    if (
+      !product.brand ||
+      !product.name ||
+      !product.category ||
+      !product.price ||
+      !product.description ||
+      !product.image ||
+      product.sizes.length === 0
+    ) {
       return toast.error("Please fill in all required fields");
     }
 
+    const formData = new FormData();
+    formData.append("brand", product.brand);
+    formData.append("name", product.name);
+    formData.append("category", product.category);
+    formData.append("price", product.price);
+    formData.append("description", product.description);
+    formData.append("image", product.image);
+
+    product.sizes.forEach((size) => {
+      formData.append("sizes", size);
+    });
+
     try {
-      await axios.post(`http://localhost:3000/products`, product);
+      await api.post("/admin/products", formData);
       toast.success("Product added successfully!");
       navigate("/adminpanel/products");
     } catch (error) {
       console.log(error);
-      toast.error("Failed to add product.");
+      toast.error(error.response?.data?.message || "Failed to add product.");
     }
   };
 
@@ -102,7 +128,7 @@ function AddProduct() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Price (₹)</label>
+            <label className="form-label">Price (Rs.)</label>
             <input
               className="form-input"
               type="number"
@@ -141,16 +167,15 @@ function AddProduct() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Image URL</label>
+            <label className="form-label">Choose Image</label>
             <input
               className="form-input"
-              type="text"
-              name="image"
-              placeholder="Paste image link here"
-              value={product.image}
-              onChange={handilChange}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
             />
           </div>
+
           <button type="submit" className="update-btn">
             Add Product to Store
           </button>

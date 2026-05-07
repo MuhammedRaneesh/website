@@ -27,27 +27,34 @@ function AppRoutes() {
       <Route path="/shop/:id" element={<ProductDetails />} />
       <Route path="/login" element={<Login />} />
       <Route path="/Register" element={<Signup />} />
-      <Route path="/order" element={<OrderPage />} />
-      <Route path="/about" element={<About/>}/>
-      <Route path="*" element={<Error/>}/>
+      <Route path="/about" element={<About />} />
+      <Route path="*" element={<Error />} />
+      <Route
+        path="/order"
+        element={
+          <ProtectedRoute>
+            <OrderPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/cart" element={
         <ProtectedRoute >
           <CartPage />
         </ProtectedRoute>
       } />
-      <Route path="/admin" element={<AdminLogin/>}/>
+      <Route path="/admin" element={<AdminLogin />} />
       <Route path="/adminpanel" element={
         <ProtectedRoute adminOnly={true}>
-          <AdminLayout/>
+          <AdminLayout />
         </ProtectedRoute>
       } >
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="products" element={<AdminProducts />} />
-        <Route path="editproduct/:id" element={<Edit/>}/>
-        <Route path="Addproduct" element={<AddProduct/>}/>
-      </Route>  
+        <Route path="editproduct/:id" element={<Edit />} />
+        <Route path="Addproduct" element={<AddProduct />} />
+      </Route>
       <Route path="/checkout" element={
         <ProtectedRoute>
           <CheckOut />

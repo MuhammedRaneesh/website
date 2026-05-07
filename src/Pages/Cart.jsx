@@ -1,5 +1,5 @@
 import { useCart } from "../Context/CartContex";
-import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag, User } from "lucide-react";
+import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag } from "lucide-react";
 import { Link, } from "react-router-dom";
 import "./Cart.css"
 import Navbar from "../components/common/Navbar";
@@ -34,12 +34,12 @@ const CartPage = () => {
 
                     <div className="cart-items-section">
                         {cart.map((item) => (
-                            <div key={`${item.id}-${item.size}`} className="cart-item">
+                            <div key={`${item._id}-${item.size}`} className="cart-item">
 
                                 <div className="cart-item-image-container">
                                     <img
-                                        src={item.image}
-                                        alt={item.name}
+                                        src={item.productId.image}
+                                        alt={item.productId.name}
                                         className="cart-item-image"
                                     />
                                 </div>
@@ -47,25 +47,25 @@ const CartPage = () => {
                                 <div className="cart-item-info">
                                     <div>
                                         <div className="cart-item-header">
-                                            <h3 className="cart-item-name">{item.name}</h3>
-                                            <p className="cart-item-price">₹{item.price}</p>
+                                            <h3 className="cart-item-name">{item.productId.name}</h3>
+                                            <p className="cart-item-price">₹{item.productId.price}</p>
                                         </div>
                                         <p className="cart-item-size">Size: US {item.size}</p>
-                                        <p className="cart-item-size">quantity {item.Quantity}</p>
+                                        <p className="cart-item-size">Quantity {item.quantity}</p>
                                     </div>
 
                                     <div className="cart-item-controls">
 
                                         <div className="quantity-controls">
                                             <button
-                                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                onClick={() => updateQuantity(item, item.quantity - 1)}
                                                 className="quantity-button"
                                             >
                                                 <Minus size={14} />
                                             </button>
                                             <span className="quantity-display">{item.quantity}</span>
                                             <button
-                                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                onClick={() => updateQuantity(item, item.quantity + 1)}
                                                 className="quantity-button"
                                             >
                                                 <Plus size={14} />
@@ -73,7 +73,7 @@ const CartPage = () => {
                                         </div>
 
                                         <button
-                                            onClick={() => removeFromCart(item.id)}
+                                            onClick={() => removeFromCart(item)}
                                             className="remove-button"
                                         >
                                             <Trash2 size={18} />

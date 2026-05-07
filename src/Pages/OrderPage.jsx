@@ -1,30 +1,31 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useAuth } from '../Context/AuthContext';
+import api from '../api/axios';
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import './Order.css';
 
 function OrderHistory() {
   const { authUser } = useAuth();
-  const [orders, setOrders] = useState([]); 
-  const [loading, setLoading] = useState(true); 
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/orders?userId=${authUser?.id}`);
-
-     
-        setOrders(response.data.reverse());
-        setLoading(false);
+        const response = await api.get("/order");
+        setOrders(response.data.order);
       } catch (error) {
         console.error("Error fetching orders:", error);
+      } finally {
         setLoading(false);
       }
     };
+
     if (authUser?.id) {
       fetchOrders();
+    } else {
+      setLoading(false);
     }
   }, [authUser]);
 
@@ -34,40 +35,60 @@ function OrderHistory() {
     <div>
       <Navbar />
       <div className="order-container">
-        <h2>My Order History</h2>
+        <div className="order-page-header">
+          <div>
+            <p className="order-eyebrow">Purchases</p>
+            <h2>My Orders</h2>
+          </div>
+          <span className="order-count">{orders.length} orders</span>
+        </div>
 
         {orders.length === 0 ? (
-          <p>You haven't placed any orders yet.</p>
+          <div className="empty-orders">
+            <h3>No orders yet</h3>
+            <p>Your purchased shoes will appear here after checkout.</p>
+          </div>
         ) : (
           orders.map((order) => (
-            <div key={order.id} className="order-card">
+            <div key={order._id} className="order-card">
               <div className="order-header">
-                <p><strong>Order ID:</strong> #{order.id}</p>
-                <span className={`status ${order.status.toLowerCase()}`}>
-                  {order.status}
-                </span>
+                <div>
+                  <p><strong>Order ID:</strong> #{order.orderId}</p>
+                  <span className="order-date">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <span className={`status ${order.status.toLowerCase()}`}>{order.status}</span>
               </div>
 
               <div className="order-items">
-                {order.items.map((item) => (
-                  <div key={item.id} className="item-row">
+                {order.products.map((item) => (
+                  <div key={`${item.productId._id}-${item.size}`} className="item-row">
                     <img
-                      src={item.image}
-                      alt={item.name}
+                      src={item.productId.image}
+                      alt={item.productId.name}
                       className="order-item-img"
                     />
 
                     <div className="item-details">
-                      <span>{item.name} (x{item.quantity})</span>
-                      <span>₹{item.price * item.quantity}</span>
+                      <div>
+                        <span>{item.productId.name}</span>
+                        <p>{item.productId.brand} - Size US {item.size} - Qty {item.quantity}</p>
+                      </div>
+                      <strong>Rs {item.price * item.quantity}</strong>
                     </div>
                   </div>
                 ))}
               </div>
 
               <div className="order-footer">
-                <p><strong>Payment:</strong> {order.payment}</p>
-                <p><strong>Total Amount:</strong> ₹{order.totalAmount}</p>
+                <div>
+                  <p><strong>Payment:</strong> {order.paymentMethod}</p>
+                  {order.shippingDetails?.city && (
+                    <p><strong>Ship to:</strong> {order.shippingDetails.city}</p>
+                  )}
+                </div>
+                <p><strong>Total:</strong> Rs {order.totalPrice}</p>
               </div>
             </div>
           ))

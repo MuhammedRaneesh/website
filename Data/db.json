@@ -279,6 +279,36 @@
       "image": "/products/nike-superrep-go-green.png",
       "size": 7,
       "quantity": 5
+    },
+    {
+      "id": "f51e",
+      "userId": "daf9",
+      "productId": "3",
+      "name": "Nike SuperRep Court Gold",
+      "price": 6999,
+      "image": "/products/nike-superrep-court-gold.jpg",
+      "size": 6,
+      "quantity": 1
+    },
+    {
+      "id": "6af5",
+      "userId": "d905",
+      "productId": "3",
+      "name": "Nike SuperRep Court Gold",
+      "price": 6999,
+      "image": "/products/nike-superrep-court-gold.jpg",
+      "size": 6,
+      "quantity": 1
+    },
+    {
+      "id": "150c",
+      "userId": "d905",
+      "productId": "3",
+      "name": "Nike SuperRep Court Gold",
+      "price": 6999,
+      "image": "/products/nike-superrep-court-gold.jpg",
+      "size": 7,
+      "quantity": 1
     }
   ],
   "orders": [
@@ -318,7 +348,7 @@
       },
       "payment": "Google Pay",
       "orderDate": "13/02/2026, 21:02:51",
-      "status": "Delivered"
+      "status": "Confirmed"
     },
     {
       "id": "bdef",
@@ -356,7 +386,7 @@
       },
       "payment": "Google Pay",
       "orderDate": "13/02/2026, 21:03:52",
-      "status": "Confirmed"
+      "status": "Processing"
     },
     {
       "id": "606e",
@@ -384,7 +414,7 @@
       },
       "payment": "PhonePe",
       "orderDate": "13/02/2026, 21:05:01",
-      "status": "Confirmed"
+      "status": "Cancelled"
     },
     {
       "id": "2121",
@@ -496,6 +526,34 @@
       },
       "payment": "Google Pay",
       "orderDate": "14/02/2026, 21:48:36",
+      "status": "Confirmed"
+    },
+    {
+      "id": "023f",
+      "userId": "d905",
+      "items": [
+        {
+          "id": "00c4",
+          "userId": "d905",
+          "productId": "3",
+          "name": "Nike SuperRep Court Gold",
+          "price": 6999,
+          "image": "/products/nike-superrep-court-gold.jpg",
+          "size": 10,
+          "quantity": 1
+        }
+      ],
+      "totalAmount": 6999,
+      "shippingDetails": {
+        "fullName": "raneesh",
+        "phone": "8547911083",
+        "email": "raneeshramankulam@gmail.com",
+        "address": "ramnakulam",
+        "city": "manjeri",
+        "pincode": "676123"
+      },
+      "payment": "COD",
+      "orderDate": "27/02/2026, 15:34:58",
       "status": "Confirmed"
     }
   ]

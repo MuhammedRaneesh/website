@@ -1,5 +1,5 @@
 import { useState } from "react"
-import axios from "axios";
+import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 import "./Signup.css"
 import { toast } from "react-toastify";
@@ -12,7 +12,7 @@ function Signup() {
     password: "",
   });
   const [error, setError] = useState({})
-  
+
   function handleInput(e) {
     const { name, value } = e.target;
     setInput((prev) => ({
@@ -24,22 +24,17 @@ function Signup() {
 
   function ValidateFrom() {
     let Newerror = {}
-    const emailRegex =  /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    const passwordRegex = /^.{6,}$/;
-    if (!input.username) {
-      Newerror.user = "Username is required";
-    } else if(input.username === "" || input.username === null){
-      Newerror.user ="user name required"
+  
+    if (!input.username.trim()) {
+      Newerror.user = "Username is required"
     }
-    if (!input.email) {
-      Newerror.email = "Email is required";
-    } else if (!emailRegex.test(input.email)) {
-      Newerror.email = "Invalid email format";
+
+    if (!input.email.trim()) {
+      Newerror.email = "Email is required"
     }
-    if (!input.password) {
-      Newerror.password = "Password is required";
-    } else if (!passwordRegex.test(input.password)) {
-      Newerror.password = "Password must be at least 6 characters";
+
+    if (!input.password.trim()) {
+      Newerror.password = "Password is required"
     }
 
     setError(Newerror);
@@ -53,28 +48,18 @@ function Signup() {
     }
 
     try {
-      const res = await axios.get("http://localhost:3000/users")
-      const users = res.data
-      if (users.find(user => user.email === input.email)) {
-        setError({ email: "Email already exists" });
-        return;
-      }
-      await axios.post("http://localhost:3000/users", {
-        ...input,
-        role : "user" ,
-        status : "active"
-      });
+      await api.post("/auth/register", input)
       setInput({ username: "", email: "", password: "" });
       setError({});
       toast.success("Registration successful!");
-      
-    
-        Navigate("/Login")
-    
+
+
+      Navigate("/Login")
+
 
     } catch (error) {
       console.error("Error registering user:", error);
-      setError({ general: "Server error, please try again" })
+      setError({ general: error.response?.data?.message || "Server error, please try again" })
     }
   }
 

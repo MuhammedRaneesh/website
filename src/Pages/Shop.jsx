@@ -1,4 +1,4 @@
-import axios from "axios"
+import api from "../api/axios"
 import Navbar from "../components/common/Navbar"
 import { useEffect, useState } from "react"
 import { toast } from "react-toastify"
@@ -7,43 +7,36 @@ import "./Shop.css"
 import Footer from "../components/common/Footer"
 
 function Shop() {
-  const [product, setProduct] = useState([])
   const [filter, setFilter] = useState([])
   const [activeBrand, setActiveBrand] = useState("ALL")
   const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState(null)
+  const limit = 12
 
   const handleBrand = (brand) => {
     setActiveBrand(brand)
+    setPage(1)
   }
   useEffect(() => {
-    axios.get("http://localhost:3000/products")
+    let url = `/products?page=${page}&limit=${limit}`
+
+    if (search.trim()) {
+      url = `/products?keyword=${encodeURIComponent(search.trim())}&page=${page}&limit=${limit}`
+    } else if (activeBrand !== "ALL") {
+      url = `/products?brand=${encodeURIComponent(activeBrand)}&page=${page}&limit=${limit}`
+    }
+    api.get(url)
       .then((responce) => {
-        setProduct(responce.data),
-          setFilter(responce.data)
+        setFilter(responce.data.products)
+        setPagination(responce.data.pagination)
       })
       .catch((err) => {
         console.log(err)
         toast.error("failed")
       })
-  }, [])
 
-  useEffect(() => {
-
-    let updatedProducts = product
-
-    if (activeBrand !== "ALL") {
-      updatedProducts = updatedProducts.filter(
-        (item) => item.brand === activeBrand
-      )
-    }
-
-    updatedProducts = updatedProducts.filter((item) =>
-      item.name.toLowerCase().includes(search.toLowerCase())
-    )
-
-    setFilter(updatedProducts)
-
-  }, [search, activeBrand, product])
+  }, [search, activeBrand, page])
 
 
   return (
@@ -67,7 +60,10 @@ function Shop() {
                 type="text"
                 value={search}
                 placeholder="Search products..."
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value)
+                  setPage(1)
+                }}
               />
             </div>
           </div>
@@ -77,18 +73,38 @@ function Shop() {
         <div className="products-container">
           {filter.length > 0 ? (
             filter.map((item) => (
-              <div key={item.id} className="product-card">
+              <div key={item._id} className="product-card">
                 <img src={item.image} alt={item.name} width="100" />
                 <h3>{item.name}</h3>
                 <p className="price">₹{item.price}</p>
                 <p>Brand: {item.brand}</p>
-                <Link to={`/shop/${item.id}`}>View Details</Link>
+                <Link to={`/shop/${item._id}`}>View Details</Link>
               </div>
             ))
           ) : (
             <p>No products found.</p>
           )}
         </div>
+
+        {pagination && pagination.totalPages > 1 && (
+          <div className="pagination-controls">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage((prev) => prev - 1)}
+            >
+              Previous
+            </button>
+            <span>
+              Page {pagination.currentPage} of {pagination.totalPages}
+            </span>
+            <button
+              disabled={page === pagination.totalPages}
+              onClick={() => setPage((prev) => prev + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
       <Footer />
     </>

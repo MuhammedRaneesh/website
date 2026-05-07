@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../api/axios";
 import "./AdminLogin.css";
 
 function AdminLogin() {
@@ -16,28 +16,19 @@ function AdminLogin() {
     setError("");
 
     try {
-      const res = await axios.get(
-        `http://localhost:3000/users?email=${email}&password=${password}`
-      );
+      const res = await api.post("/admin/adminlogin", { email, password });
 
-      if (res.data.length === 0) {
-        setError("Invalid email or password.");
-        return;
-      }
+      Login({
+        id: res.data.user.id,
+        name: res.data.user.username,
+        email: res.data.user.email,
+        role: res.data.user.role,
+        isLoggedin: true,
+      });
 
-      const user = res.data[0];
-
-      if (user.role !== "admin") {
-        setError("You are not an admin.");
-        navigate("/");
-        return;
-      }
-
-      Login(user);
       navigate("/adminpanel/dashboard");
-
     } catch (err) {
-      setError("Something went wrong.");
+      setError(err.response?.data?.message || "Something went wrong.");
     }
   };
 

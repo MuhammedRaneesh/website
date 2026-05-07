@@ -1,37 +1,55 @@
-import axios from "axios"
+import api from "../../api/axios"
 import { useEffect, useState } from "react"
 import "./Users.css"
+
 function AdminUsers() {
-  const [user, setUser] = useState([])
+  const [users, setUsers] = useState([])
   const [search, setSearch] = useState("")
-  useEffect(() => {
-    axios.get("http://localhost:3000/users")
-      .then((res) => setUser(res.data))
-  }, [])
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalUsers: 0,
+    limit: 12,
+  })
 
-  const filteredUsers = user.filter((item) => {
-    const User = item.role !== "admin";
-    const Search = item.username?.toLowerCase().includes(search.toLowerCase()) ||
-      item.email?.toLowerCase().includes(search.toLowerCase());
-
-    return User && Search;
-  });
-
-  const Status = async (id, currentStatus) => {
-    const NewStatus = currentStatus === "active" ? "blocked" : "active"
+  const fetchUsers = async () => {
     try {
-      await axios.patch(`http://localhost:3000/users/${id}`, {
-        status: NewStatus
-      })
-
-      setUser(user.map((item) => item.id === id ? { ...item, status: NewStatus } : item))
+      const res = await api.get(
+        `/admin/users?keyword=${encodeURIComponent(search)}&page=${page}&limit=12`
+      )
+      setUsers(res.data.users)       
+      setPagination(res.data.pagination)
     } catch (error) {
-      console.log("failled to update ")
+      console.log("Failed to fetch users", error)
     }
   }
 
+  useEffect(() => {
+    fetchUsers()
+  }, [search, page])
 
 
+  useEffect(() => {
+    setPage(1)
+  }, [search])
+
+  const toggleStatus = async (id) => {
+    try {
+      const res = await api.patch(`/admin/users/${id}`)   
+      
+  
+      setUsers((prev) =>
+        prev.map((item) =>
+          item._id === res.data.user.id
+            ? { ...item, isBlocked: res.data.user.isBlocked }
+            : item
+        )
+      )
+    } catch (error) {
+      console.log("Failed to update user status", error)
+    }
+  }
 
   return (
     <div className="admin-users-container">
@@ -58,23 +76,23 @@ function AdminUsers() {
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((item) => (
-                <tr key={item.id} className="admin-users-row">
-                  <td>{item.id}</td>
+            {users.length > 0 ? (
+              users.map((item) => (
+                <tr key={item._id} className="admin-users-row">
+                  <td>{item._id}</td>
                   <td>{item.username}</td>
                   <td>{item.email}</td>
                   <td>
-                    <span className={`status-badge status-${item.status}`}>
-                      {item.status}
+                    <span className={`status-badge status-${item.isBlocked ? "blocked" : "active"}`}>
+                      {item.isBlocked ? "Blocked" : "Active"}
                     </span>
                   </td>
                   <td>
                     <button
-                      onClick={() => Status(item.id, item.status)}
-                      className={`btn-status ${item.status === "active" ? "btn-block" : "btn-active"}`}
+                      onClick={() => toggleStatus(item._id)} 
+                      className={`btn-status ${item.isBlocked ? "btn-active" : "btn-block"}`}
                     >
-                      {item.status === "active" ? "Block" : "Activate"}
+                      {item.isBlocked ? "Activate" : "Block"}  
                     </button>
                   </td>
                 </tr>
@@ -89,6 +107,31 @@ function AdminUsers() {
           </tbody>
         </table>
       </div>
+
+      {/* ✅ Added: Pagination controls */}
+      {pagination.totalPages > 1 && (
+        <div className="admin-users-pagination">
+          <button
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page === 1}
+            className="btn-page"
+          >
+            Previous
+          </button>
+
+          <span className="page-info">
+            Page {pagination.currentPage} of {pagination.totalPages}
+          </span>
+
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page === pagination.totalPages}
+            className="btn-page"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   )
 }

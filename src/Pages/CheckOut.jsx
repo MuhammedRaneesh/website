@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { useCart } from '../Context/CartContex';
 import { useAuth } from '../Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import './CheckOut.css';
 import Navbar from "../components/common/Navbar"
 import Footer from "../components/common/Footer"
 import { toast } from 'react-toastify';
 function CheckOut() {
-  const { cart, subtotal, clearCart } = useCart();
-  const { authUser } = useAuth();
+
+  const { cart, subtotal, resetCart } = useCart();
   const navigate = useNavigate();
   const [payment, setPayment] = useState(null);
   const [form, setForm] = useState({
@@ -35,29 +35,25 @@ function CheckOut() {
       toast.error("Please select a payment method");
       return;
     }
-    if (!form.fullName ||!form.email || !form.address || !form.phone || !form.city || !form.pincode) {
+    if (!form.fullName || !form.email || !form.address || !form.phone || !form.city || !form.pincode) {
       toast.warn("Please fill all delivery address fields")
       return;
     }
 
     const orderData = {
-      userId: authUser?.id,
-      items: cart,
-      totalAmount: subtotal,
-      shippingDetails: form,
-      payment : payment,
-      orderDate: new Date().toLocaleString(),
-      status: "Confirmed"
+      address: form,
+      payment: payment,
     };
 
     try {
-      await axios.post("http://localhost:3000/orders", orderData);
+      await api.post("/order", orderData);
+
       toast.success("Order Placed Succesfully")
-      await clearCart();
+      resetCart();
       navigate('/');
     } catch (err) {
       console.error("Checkout Error:", err);
-      alert("Something went wrong. Please try again.");
+      toast.error(err.response?.data?.message || "Something went wrong. Please try again.")
     }
   };
 
@@ -67,7 +63,7 @@ function CheckOut() {
       <div className="checkout">
         <div className="checkout-wrapper">
 
-    
+
           <div className="checkout-form-section">
             <h2>Shipping Details</h2>
 
@@ -129,23 +125,23 @@ function CheckOut() {
 
               <div className="payment-group">
                 <label>
-                  <input type="radio" name="paymentMethod"  onChange={()=>setPayment("COD")} />
+                  <input type="radio" name="paymentMethod" onChange={() => setPayment("COD")} />
                   Cash on Delivery
                 </label>
 
                 <label>
-                  <input type="radio" name="paymentMethod" onChange={()=>setPayment("Google Pay")} />
+                  <input type="radio" name="paymentMethod" onChange={() => setPayment("Google Pay")} />
                   Google Pay
                 </label>
 
                 <label>
-                  <input type="radio" name="paymentMethod"  onChange={()=>setPayment("PhonePe")} />
+                  <input type="radio" name="paymentMethod" onChange={() => setPayment("PhonePe")} />
                   PhonePe
                 </label>
               </div>
               <button type="submit" className="btn">
-              Place Order
-            </button>
+                Place Order
+              </button>
             </form>
           </div>
 
@@ -153,9 +149,9 @@ function CheckOut() {
             <h3>Order Summary</h3>
 
             {cart.map((item) => (
-              <div key={item.id} className="summary-row">
-                <span>{item.name} × {item.quantity}</span>
-                <span>₹{item.price * item.quantity}</span>
+              <div key={item._id} className="summary-row">
+                <span>{item.productId.name} × {item.quantity}</span>
+                <span>₹{item.productId.price * item.quantity}</span>
               </div>
             ))}
             <div className="summary-total">

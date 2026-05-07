@@ -1,56 +1,65 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import api from "../../api/axios";
 import "./AdminDasbord.css";
 
 function AdminDashboard() {
-  const [product, setProduct] = useState([]);
-  const [user, setUser] = useState([]);
-  const [order, setOrder] = useState([]);
+  const [dashboard, setDashboard] = useState({
+    totalRevenue: 0,
+    activeUsers: 0,
+    totalProducts: 0,
+    orders: 0,
+    recentOrders: [],
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await api.get("/admin/dashboard");
+        setDashboard(res.data.dashboard);
+      } catch (error) {
+        console.error("Failed to load dashboard data", error);
+        setError("Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    try {
-      axios.get("http://localhost:3000/users")
-        .then((res) => setUser(res.data))
-      axios.get("http://localhost:3000/products")
-        .then((res) => setProduct(res.data))
-      axios.get("http://localhost:3000/orders")
-        .then((res) => setOrder(res.data))
-    } catch (error) {
-      console.error("Failed to load dashboard data", error);
-    }
-
+    fetchDashboard();
   }, []);
 
+  if (loading) {
+    return <div className="admin-dashboard">Loading dashboard...</div>;
+  }
 
-  const Users = user.filter((item) => item.role !== "admin");
-
-
-  const totalRevenue = order.reduce((acc, item) => acc + item.totalAmount, 0);
-
-
-  const recentOrders = [...order].reverse().slice(0, 5);
-  console.log(recentOrders)
+  if (error) {
+    return <div className="admin-dashboard">{error}</div>;
+  }
 
   return (
     <div className="admin-dashboard">
-
       <div className="stats-grid">
         <div className="stat-card">
           <h4>Total Revenue</h4>
-          <p className="stat-value">₹{totalRevenue.toLocaleString()}</p>
+          <p className="stat-value">
+            Rs {Number(dashboard.totalRevenue || 0).toLocaleString()}
+          </p>
         </div>
+
         <div className="stat-card">
           <h4>Active Users</h4>
-          <p className="stat-value">{Users.length}</p>
+          <p className="stat-value">{dashboard.activeUsers}</p>
         </div>
+
         <div className="stat-card">
           <h4>Total Products</h4>
-          <p className="stat-value">{product.length}</p>
+          <p className="stat-value">{dashboard.totalProducts}</p>
         </div>
+
         <div className="stat-card">
           <h4>Orders</h4>
-          <p className="stat-value">{order.length}</p>
+          <p className="stat-value">{dashboard.orders}</p>
         </div>
       </div>
 
@@ -60,33 +69,47 @@ function AdminDashboard() {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>order Id</th>
+                <th>Order ID</th>
                 <th>Customer</th>
-                <th>date</th>
-                <th>payment</th>
+                <th>Date</th>
+                <th>Payment</th>
                 <th>Amount</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {recentOrders.map((ord) => (
-                <tr key={ord.id}>
-                  <td>{ord.id}</td>
-                  <td>
-                    <strong>{ord.shippingDetails.fullName}</strong>
-                    <br />
-                    <small>{ord.shippingDetails.city}</small>
-                  </td>
-                  <td>{ord.orderDate}</td>
-                  <td>{ord.payment}</td>
-                  <td>₹{ord.totalAmount}</td>
-                  <td>
-                    <span className={`status-pill ${ord.status.toLowerCase()}`}>
-                      {ord.status}
-                    </span>
-                  </td>
+              {dashboard.recentOrders.length > 0 ? (
+                dashboard.recentOrders.map((order) => (
+                  <tr key={order._id}>
+                    <td>{order.orderId}</td>
+                    <td>
+                      <strong>
+                        {order.shippingDetails?.fullName ||
+                          order.userId?.username ||
+                          "Unknown"}
+                      </strong>
+                      <br />
+                      <small>
+                        {order.shippingDetails?.city || order.userId?.email || "-"}
+                      </small>
+                    </td>
+                    <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>{order.paymentMethod}</td>
+                    <td>Rs {Number(order.totalPrice || 0).toLocaleString()}</td>
+                    <td>
+                      <span
+                        className={`status-pill ${order.status.toLowerCase()}`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6">No recent orders found.</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

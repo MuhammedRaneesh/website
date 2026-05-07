@@ -3,8 +3,10 @@ import { createContext, useContext, useState, useEffect} from "react";
 const Authcontext = createContext()
 
 export const Authprovider = ({children}) => {
+
     const [authUser, setAuthUser] = useState(null)
     const [loading,setLoading] = useState(true)
+    
     useEffect(() => {
         const SavedUser = localStorage.getItem("AuthUser")
         if (SavedUser) { setAuthUser(JSON.parse(SavedUser)) }

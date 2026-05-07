@@ -1,4 +1,4 @@
-import axios from "axios"
+import api from "../../api/axios"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
@@ -31,38 +31,21 @@ function Login() {
     }
 
     try {
-      const response = await axios.get(`http://localhost:3000/users?email=${user.email}`)
-
-      if (response.data.length === 0) {
-        setError("Email is not registered")
-        return
-      }
-
-      const store = response.data[0] 
-
-      if (store.status === "blocked") {
-        setError("Your account has been blocked");
-        toast.error("Access Denied: Account Blocked");
-        return;
-      }
-      if (store.password !== user.password) {
-        setError("Incorrect password")
-        return
-      }
+      const response = await api.post("/auth/login" , user)
 
       Login({
-        id: store.id,
-        name: store.username,
-        email: store.email,
-        role: store.role,
-        isLoggedin: true,
+        id : response.data.user.id , 
+        name : response.data.user.username ,
+        email : response.data.user.email ,
+        role : response.data.user.role , 
+        isLoggedin : true
       })
 
       toast.success("Login successful")
       navigate("/")
     } catch (error) {
       console.log(error, "server")
-      setError("Server error. Please try again.")
+      setError(error.response?.data?.message ||  "Server error. Please try again.")
     }
   }
 

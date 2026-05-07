@@ -8,12 +8,18 @@ import {
   LogOut,
 } from 'lucide-react';
 import "./Layout.css"
+import api from '../../api/axios';
 function AdminLayout() {
   const { logout } = useAuth();
 
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (!window.confirm("Are you sure you want to logout?")) return;
+    try {
+      await api.delete(`/auth/logout`)
+    } catch (error) {
+      console.log(error)
+    }
     logout();
   };
 

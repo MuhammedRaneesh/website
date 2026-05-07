@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
-import axios from "axios"
+import api from "../api/axios"
 import Navbar from "../components/common/Navbar"
 import "./prouduct.css"
 import { toast } from "react-toastify"
@@ -14,13 +14,13 @@ function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const [loading, setloading] = useState(true)
   const [size, setSize] = useState(null)
-  const {authUser} = useAuth()
-  const { addToCart} = useCart()
+  const { authUser } = useAuth()
+  const { addToCart } = useCart()
 
   useEffect(() => {
-    axios.get(`http://localhost:3000/products/${id}`)
+    api.get(`/products/${id}`)
       .then((res) => {
-        setProduct(res.data)
+        setProduct(res.data.product)
         setloading(false)
       }).catch((data) => {
         console.log(data)
@@ -30,18 +30,18 @@ function ProductDetails() {
   }, [id, navigate]);
 
   function increaseQty() {
-    setQuantity((prev) => prev + 1 )
+    setQuantity((prev) => prev + 1)
   }
   function decreaseQty() {
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1))
   }
   async function handleAddToCart() {
-    if(!authUser){
+    if (!authUser) {
       toast.error("You must login first")
       setTimeout(() => {
         navigate("/")
       }, 2000);
-        
+
       return
     }
     if (!size) {
@@ -49,7 +49,7 @@ function ProductDetails() {
       return
     }
     try {
-      await addToCart(product,size,quantity)
+      await addToCart(product, size, quantity)
       toast.success(`Added`)
     } catch (error) {
       toast.error("Failed to add")
@@ -113,7 +113,7 @@ function ProductDetails() {
         </div>
 
       </div>
-      <Footer/>
+      <Footer />
     </div>
   )
 }

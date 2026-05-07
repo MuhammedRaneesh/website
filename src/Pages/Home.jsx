@@ -1,7 +1,7 @@
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import { NavLink, Link } from "react-router-dom";
 import "./Home.css"
 
@@ -9,8 +9,8 @@ function Home() {
   const [product, setProduct] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/products")
-      .then((res) => setProduct(res.data))
+    api.get("/products")
+      .then((res) => setProduct(res.data.products))
       .catch((error) => console.log("failled", error))
   }, []);
 
@@ -67,8 +67,8 @@ function Home() {
 
           <div className="product-show">
             {product.slice(-6).map((item) => (
-              <div className="product-card" key={item.id}>
-                <Link to={`/shop/${item.id}`} className="product-dir">
+              <div className="product-card" key={item._id}>
+                <Link to={`/shop/${item._id}`} className="product-dir">
                   <img src={item.image} alt="item.name" />
                   <div className="product-info">
                     <h3>{item.brand}</h3>

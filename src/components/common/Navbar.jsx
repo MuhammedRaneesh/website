@@ -1,4 +1,5 @@
 import { useState } from "react";
+import api  from "../../api/axios";
 import { NavLink, useNavigate } from "react-router-dom";
 import { FaOpencart, FaUserCircle, FaChevronDown } from "react-icons/fa";
 import "./Navbar.css";
@@ -12,7 +13,12 @@ function Navbar() {
     const [Dropdown, setDropdown] = useState(false);
 
 
-    const handleLogout = () => {
+    const handleLogout = async  () => {
+        try {
+            await api.delete("/auth/logout")
+        } catch (error) {
+            console.log(error.response?.data?.message || "Logout failed") ;
+        }
         logout();
         setDropdown(false);
         navigate("/");
